@@ -1,0 +1,4 @@
+Create a parser that can handle the SQL commands
+    ANTLR: http://www.antlr.org/
+Create way to store the data to a file and retrieve it
+Create an interface to interact with the database, based upon the responses from the SQL handler
