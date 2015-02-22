@@ -2,73 +2,93 @@ grammar SQL;
 
 // Parser Rules
 
-tableCreation   :   CREATE table values NEWLINE
+commands        :   command commands
+                |   command
                 ;
 
-tableInsertion  :   INSERT table values NEWLINE
+command         :   tableCreation
+                |   tableInsertion
+                |   tableSelection
                 ;
 
-tableSelection  :   SELECT selection FROM tables WHERE fieldOperation
-                |   SELECT selection FROM tables
+// Table creation requirements
+tableCreation   :   'CREATE' table '(' fields ')'
                 ;
 
-selection       :   //Something
+table           :   NAME
                 ;
 
-fieldOperation  :   //Something
+fields          :   field ',' fields
+                |   field
                 ;
 
+field           :   NAME TYPE
+                ;
 
-tables  :   table tables
-        |   table
-        ;
+// Table insertion requirements
+tableInsertion  :   'INSERT INTO' table '(' values ')'
+                ;
 
-table   :   NAME
-        ;
+values          :   value ',' values
+                |   value
+                ;
 
-values  :   value values
-        |   value
-        ;
+value           :   INTEGER
+                |   CONSTANT
+                ;
 
-value   :   NAME TYPE COMMA
-        |   NAME TYPE
-        ;
+// Table selection requirements
+tableSelection  :   'SELECT' selections 'FROM' tables 'WHERE' queries
+                |   'SELECT' selections 'FROM' tables
+                ;
 
+selections      :   selection ',' selections
+                |   selection
+                ;
 
+selection       :   EVERYTHING
+                |   NAME
+                ;
+
+tables          :   table ',' tables
+                |   table
+                ;
+
+queries         :   query ',' queries
+                |   query
+                ;
+
+query           :   variable '=' variable
+                ;
+
+variable        :   NAME
+                |   CONSTANT
+                |   INTEGER
+                ;
 
 //Lexer Rules
 
-CREATE  :   'CREATE'
-        ;
+NAME        :   (('a'..'z')('a'..'z' | '0'..'9')*)
+            ;
 
-INSERT  :   'INSERT INTO'
-        ;
+CONSTANT    :   ('\"' (('A'..'Z') | ('a'..'z') | ('0'..'9'))+ '\"')
+            |   ('\'' (('A'..'Z') | ('a'..'z') | ('0'..'9'))+ '\'')
+            ;
 
-SELECT  :   'SELECT'
-        ;
+EVERYTHING  :   '*'
+            ;
 
-FROM    :   'FROM'
-        ;
+INTEGER     :   ('0'..'9')+
+            ;
 
-WHERE   :   'WHERE'
-        ;
-
-NAME    :   ('a'..'z')+
-        ;
-
-TYPE    :   ('INT'
-        |   'STRING')
-        ;
-
-COMMA   :   ','
-        ;
-
-NEWLINE :   '\n'
-        ;
+TYPE        :   ('INT'
+            |   'STRING')
+            ;
 
 WHITESPACE  :   ('\t'
             |   ' '
             |   '\r'
+            |   '\n'
             |   '\u000C')+
             ->  skip
             ;
