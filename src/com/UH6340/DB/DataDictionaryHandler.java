@@ -17,20 +17,29 @@ public class DataDictionaryHandler {
     ArrayList<ArrayList<String>> dictionary;
     File dictionaryFile;
 
-    public DataDictionaryHandler() throws Exception {
+    public DataDictionaryHandler() throws IOException {
         try {
             // Attempt to open the file
             dictionaryFile = new File("db.txt");
+            dictionary = new ArrayList<ArrayList<String>>();
+
+            // Create a directory for the tables
+            File tablesFolder = new File("tables");
+            if (!tablesFolder.isDirectory()) {
+                System.out.println("No tables directory present, creating ./tables");
+                if (!tablesFolder.mkdir()) {
+                    throw new IOException("Unable to create tables directory");
+                }
+            }
 
             // See if the file exists
             if (!dictionaryFile.isFile()) {
+                System.out.println("No past database information found, creating new db.txt");
                 // File doesn't exist, needs to be written
                 if (!dictionaryFile.createNewFile()) {
-                    throw new Exception("Failed to create db.txt file");
+                    throw new IOException("Unable to create db.txt");
                 }
             } else {
-                dictionary = new ArrayList<ArrayList<String>>();
-
                 // File exists, load up the dictionary
                 BufferedReader reader = new BufferedReader(new FileReader(dictionaryFile));
 

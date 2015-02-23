@@ -52,6 +52,9 @@ public class DBCommandHandler {
 
     private void selectFromTable(ArrayList<String> tables, ArrayList<String> selections, ArrayList<Pair<String, String>> queries) {
         System.out.println("Select " + tables + " from " + selections.toString() + " where " + queries.toString());
+        // Resolve projection and grab indicies of tables
+        // Grab relevant pieces from table
+        // Print out data in terminal
     }
 
     private void insertIntoTable(String tableName, ArrayList<String> values) throws Exception {
