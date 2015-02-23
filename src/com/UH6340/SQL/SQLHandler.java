@@ -1,4 +1,4 @@
-package com.UH6340.SQLParsing;
+package com.UH6340.SQL;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.Pair;
@@ -8,13 +8,24 @@ import java.util.ArrayList;
 /**
  * Created by Brian Holtkamp on 2/21/2015.
  * Handles SQL commands
+ *
+ * Rule definitions:
+ * CREATE table ( fields)
+ * INSERT INTO table ( values )
+ * SELECT selections FROM tables { WHERE queries }
  */
 
 public class SQLHandler {
+    int commandType = -1;
+    ArrayList<String> tables = new ArrayList<String>();
+    ArrayList<Pair<String, String>> fields = new ArrayList<Pair<String, String>>();
+    ArrayList<String> values = new ArrayList<String>();
+    ArrayList<String> selections = new ArrayList<String>();
+    ArrayList<Pair<String, String>> queries = new ArrayList<Pair<String, String>>();
 
-// Class to handle the rule productions with ANTLR
+    // Class to handle the rule productions with ANTLR
     class SQLCommandListener extends SQLBaseListener {
-        int commandType;
+        int commandType = -1;
         ArrayList<String> tables = new ArrayList<String>();
         ArrayList<Pair<String, String>> fields = new ArrayList<Pair<String, String>>();
         ArrayList<String> values = new ArrayList<String>();
@@ -38,6 +49,10 @@ public class SQLHandler {
         }
 
         int getCommandType() {
+            return commandType;
+        }
+
+        void printCommandType() {
             String commandName = "undefined";
             switch(commandType) {
                 case SQLParser.RULE_tableCreation:
@@ -49,10 +64,10 @@ public class SQLHandler {
                 case SQLParser.RULE_tableSelection:
                     commandName = "SELECT";
                     break;
+                default:
+                    break;
             }
             System.out.println("Command is: " + commandName);
-
-            return commandType;
         }
 
         @Override
@@ -61,14 +76,16 @@ public class SQLHandler {
         }
 
         ArrayList<String> getTables() {
+            return tables;
+        }
+
+        void printTables() {
             if (!tables.isEmpty()) {
                 System.out.print("Tables: ");
                 for (String table : tables) {
                     System.out.println(table);
                 }
             }
-
-            return tables;
         }
 
         @Override
@@ -78,14 +95,16 @@ public class SQLHandler {
         }
 
         ArrayList<Pair<String, String>> getFields() {
+            return fields;
+        }
+
+        void printFields() {
             if (!fields.isEmpty()) {
                 System.out.print("Fields: ");
                 for (Pair<String, String> field : fields) {
                     System.out.println(field.a + ":" + field.b);
                 }
             }
-
-            return fields;
         }
 
         @Override
@@ -94,14 +113,16 @@ public class SQLHandler {
         }
 
         ArrayList<String> getValues() {
+            return values;
+        }
+
+        void printValues() {
             if (!values.isEmpty()) {
                 System.out.print("Values: ");
                 for (String value : values) {
                     System.out.println(value);
                 }
             }
-
-            return values;
         }
 
         @Override
@@ -110,14 +131,16 @@ public class SQLHandler {
         }
 
         ArrayList<String> getSelections() {
+            return selections;
+        }
+
+        void printSelections() {
             if (!selections.isEmpty()) {
                 System.out.print("Selections: ");
                 for (String selection : selections) {
                     System.out.println(selection);
                 }
             }
-
-            return selections;
         }
 
         @Override
@@ -127,14 +150,16 @@ public class SQLHandler {
         }
 
         ArrayList<Pair<String, String>> getQueries() {
+            return queries;
+        }
+
+        void printQueries() {
             if (!queries.isEmpty()) {
                 System.out.print("Queries: ");
                 for (Pair<String, String> query : queries) {
                     System.out.println(query.a + ":" + query.b);
                 }
             }
-
-            return queries;
         }
     }
 
@@ -163,13 +188,59 @@ public class SQLHandler {
         // Find the command for this message
         parser.command();
 
-        listener.getCommandType();
-        listener.getTables();
-        listener.getFields();
-        listener.getValues();
-        listener.getSelections();
-        listener.getQueries();
+        reset();
+        copyResults(listener);
+    }
+
+    private void reset() {
+        commandType = -1;
+        tables.clear();
+        fields.clear();
+        values.clear();
+        selections.clear();
+        queries.clear();
+    }
+
+    private void copyResults(SQLCommandListener listener) {
+        commandType = listener.getCommandType();
+        tables = listener.getTables();
+        fields = listener.getFields();
+        values = listener.getValues();
+        selections = listener.getSelections();
+        queries = listener.getQueries();
+    }
+
+    public void printCommand(SQLCommandListener listener) {
+        listener.printCommandType();
+        listener.printTables();
+        listener.printFields();
+        listener.printSelections();
+        listener.printValues();
+        listener.printQueries();
         System.out.println();
     }
 
+    public int getCommandType() {
+        return commandType;
+    }
+
+    public ArrayList<String> getTables() {
+        return tables;
+    }
+
+    public ArrayList<Pair<String, String>> getFields() {
+        return fields;
+    }
+
+    public ArrayList<String> getValues() {
+        return values;
+    }
+
+    public ArrayList<String> getSelections() {
+        return selections;
+    }
+
+    public ArrayList<Pair<String, String>> getQueries() {
+        return queries;
+    }
 }

@@ -1,0 +1,34 @@
+Consists of a db file and individual files for the tables:
+DB.txt = Database schemas and keeps track of tables
+*.txt = Database tables
+
+DB.txt:
+{
+    "tables": [
+        {
+            "name":"table1"
+            "field1":"type",
+            "field2":"type",
+            ...
+        },
+        {
+            ...
+        },
+        ...
+    ]
+}
+
+*.txt:
+{
+    "data": [
+        {
+            "field1":"data",
+            "field2":"data",
+            ...
+        },
+        {
+            ...
+        },
+        ...
+    ]
+}

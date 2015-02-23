@@ -1,6 +1,6 @@
 // Generated from SQL.g by ANTLR 4.5
 
-package com.UH6340.SQLParsing;
+package com.UH6340.SQL;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
