@@ -1,36 +1,24 @@
 Consists of a db file and individual files for the tables:
-DB.txt = Database schemas and keeps track of tables
+db.txt = Database schemas and keeps track of tables
 *.txt = Database tables
 
-DB.txt:
-{
-    "tables": [
-        {
-            "name":"table1"
-            "fields":[
-                "field1":"type",
-                "field2":"type",
-                ...
-            ]
-        },
-        {
-            ...
-        },
-        ...
-    ]
-}
+db.txt: Everything will be comma delimited, with newlines separating tuples
+tableName,fieldName,dataType,fileLocation,\n
+...
 
-*.txt:
-{
-    "data": [
-        {
-            "field1":"data",
-            "field2":"data",
-            ...
-        },
-        {
-            ...
-        },
-        ...
-    ]
-}
+Example:
+employee,id,INTEGER,employee.txt,
+employee,name,STRING,employee.txt,
+employee,division,STRING,employee.txt,
+salary,id,INTEGER,salary.txt,
+salary,salary,INTEGER,salary.txt,
+...
+
+*.txt: Everything will be comma delimited, with newlines separating tuples
+field1,field2,field3,...\n
+...
+
+Example:
+1,Alicia,Direction,
+2,Bob,Production,
+...

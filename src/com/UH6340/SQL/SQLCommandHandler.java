@@ -2,12 +2,13 @@ package com.UH6340.SQL;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.Pair;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
 
 /**
  * Created by Brian Holtkamp on 2/21/2015.
- * Handles SQL commands
+ * Handles SQL queries
  *
  * Rule definitions:
  * CREATE table ( fields)
@@ -15,8 +16,11 @@ import java.util.ArrayList;
  * SELECT selections FROM tables { WHERE queries }
  */
 
-public class SQLHandler {
-    int commandType = -1;
+
+public class SQLCommandHandler {
+    final static int maxStringSize = 64;
+
+    int queryType = -1;
     ArrayList<String> tables = new ArrayList<String>();
     ArrayList<Pair<String, String>> fields = new ArrayList<Pair<String, String>>();
     ArrayList<String> values = new ArrayList<String>();
@@ -25,7 +29,7 @@ public class SQLHandler {
 
     // Class to handle the rule productions with ANTLR
     class SQLCommandListener extends SQLBaseListener {
-        int commandType = -1;
+        int queryType = -1;
         ArrayList<String> tables = new ArrayList<String>();
         ArrayList<Pair<String, String>> fields = new ArrayList<Pair<String, String>>();
         ArrayList<String> values = new ArrayList<String>();
@@ -35,39 +39,21 @@ public class SQLHandler {
         // Determine command types
         @Override
         public void exitTableInsertion(SQLParser.TableInsertionContext context) {
-            commandType = SQLParser.RULE_tableInsertion;
+            queryType = SQLParser.RULE_tableInsertion;
         }
 
         @Override
         public void exitTableCreation(SQLParser.TableCreationContext context) {
-            commandType = SQLParser.RULE_tableCreation;
+            queryType = SQLParser.RULE_tableCreation;
         }
 
         @Override
         public void exitTableSelection(SQLParser.TableSelectionContext context) {
-            commandType = SQLParser.RULE_tableSelection;
+            queryType = SQLParser.RULE_tableSelection;
         }
 
-        int getCommandType() {
-            return commandType;
-        }
-
-        void printCommandType() {
-            String commandName = "undefined";
-            switch(commandType) {
-                case SQLParser.RULE_tableCreation:
-                    commandName = "CREATE";
-                    break;
-                case SQLParser.RULE_tableInsertion:
-                    commandName = "INSERT INTO";
-                    break;
-                case SQLParser.RULE_tableSelection:
-                    commandName = "SELECT";
-                    break;
-                default:
-                    break;
-            }
-            System.out.println("Command is: " + commandName);
+        int getQueryType() {
+            return queryType;
         }
 
         @Override
@@ -79,18 +65,13 @@ public class SQLHandler {
             return tables;
         }
 
-        void printTables() {
-            if (!tables.isEmpty()) {
-                System.out.print("Tables: ");
-                for (String table : tables) {
-                    System.out.println(table);
-                }
-            }
-        }
-
         @Override
         public void exitField(SQLParser.FieldContext context) {
-            Pair<String, String> field = new Pair<String, String>(context.getChild(0).toString(), context.getChild(1).toString());
+            if (context.getChild(0).toString().replaceAll("\"", "").length() > maxStringSize) {
+                throw new ParseCancellationException("Name exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\"", ""));
+            }
+
+            Pair<String, String> field = new Pair<String, String>(context.getChild(0).toString().replaceAll("\"", ""), context.getChild(1).toString().replaceAll("\"", ""));
             fields.add(field);
         }
 
@@ -98,31 +79,17 @@ public class SQLHandler {
             return fields;
         }
 
-        void printFields() {
-            if (!fields.isEmpty()) {
-                System.out.print("Fields: ");
-                for (Pair<String, String> field : fields) {
-                    System.out.println(field.a + ":" + field.b);
-                }
-            }
-        }
-
         @Override
         public void exitValue(SQLParser.ValueContext context) {
-            values.add(context.getChild(0).toString());
+            if (context.getChild(0).toString().replaceAll("\"", "").length() > maxStringSize) {
+                throw new ParseCancellationException("String exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\"", ""));
+            }
+
+            values.add(context.getChild(0).toString().replaceAll("\"", ""));
         }
 
         ArrayList<String> getValues() {
             return values;
-        }
-
-        void printValues() {
-            if (!values.isEmpty()) {
-                System.out.print("Values: ");
-                for (String value : values) {
-                    System.out.println(value);
-                }
-            }
         }
 
         @Override
@@ -134,15 +101,6 @@ public class SQLHandler {
             return selections;
         }
 
-        void printSelections() {
-            if (!selections.isEmpty()) {
-                System.out.print("Selections: ");
-                for (String selection : selections) {
-                    System.out.println(selection);
-                }
-            }
-        }
-
         @Override
         public void exitQuery(SQLParser.QueryContext context) {
             Pair<String, String> query = new Pair<String, String>(context.variable(0).getChild(0).toString(), context.variable(1).getChild(0).toString());
@@ -151,15 +109,6 @@ public class SQLHandler {
 
         ArrayList<Pair<String, String>> getQueries() {
             return queries;
-        }
-
-        void printQueries() {
-            if (!queries.isEmpty()) {
-                System.out.print("Queries: ");
-                for (Pair<String, String> query : queries) {
-                    System.out.println(query.a + ":" + query.b);
-                }
-            }
         }
     }
 
@@ -193,7 +142,7 @@ public class SQLHandler {
     }
 
     private void reset() {
-        commandType = -1;
+        queryType = -1;
         tables.clear();
         fields.clear();
         values.clear();
@@ -202,7 +151,7 @@ public class SQLHandler {
     }
 
     private void copyResults(SQLCommandListener listener) {
-        commandType = listener.getCommandType();
+        queryType = listener.getQueryType();
         tables = listener.getTables();
         fields = listener.getFields();
         values = listener.getValues();
@@ -210,18 +159,8 @@ public class SQLHandler {
         queries = listener.getQueries();
     }
 
-    public void printCommand(SQLCommandListener listener) {
-        listener.printCommandType();
-        listener.printTables();
-        listener.printFields();
-        listener.printSelections();
-        listener.printValues();
-        listener.printQueries();
-        System.out.println();
-    }
-
-    public int getCommandType() {
-        return commandType;
+    public int getQueryType() {
+        return queryType;
     }
 
     public ArrayList<String> getTables() {

@@ -1,11 +1,6 @@
 package com.UH6340;
 
-import com.UH6340.DB.DBHandler;
-import com.UH6340.SQL.SQLHandler;
-import com.UH6340.SQL.SQLParser;
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
+import com.UH6340.DB.DBCommandHandler;
 
 public class Main {
     static String[] queries =  {
@@ -14,7 +9,9 @@ public class Main {
                             "CREATE head (boss INT, division STRING)",
                             "INSERT INTO employee (1, \"Alicia\", \"Direction\")",
                             "INSERT INTO salary (1, 100000)",
-                            "INSERT INTO employee (2, \"Bob\", \"Production\")",
+                            "INSERT INTO employee (2, \"Bob\", \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\")",
+                            "INSERT INTO employee (2, 2, 2)",
+                            "INSERT INTO employee (2, 2)",
                             "INSERT INTO salary (2, 95000)",
                             "INSERT INTO head (2, \"Production\")",
                             "SELECT * FROM employee, salary WHERE id = id",
@@ -24,25 +21,16 @@ public class Main {
                         };
 
     public static void main(String[] args) {
-        // Test the SQL handler
-
-
         // Setup our DB handler to make life easier
         try {
-            SQLHandler handler = new SQLHandler();
-            DBHandler dbHandler = new DBHandler();
+            DBCommandHandler db = new DBCommandHandler();
 
             for (String query : queries) {
-                System.out.println(query);
-                handler.handleMessage(query);
-                if (handler.getCommandType() == SQLParser.RULE_tableCreation) {
-                    dbHandler.addTable(handler.getTables().get(0), handler.getFields());
-                }
+                db.handleCommand(query);
             }
-        } catch (IOException ex) {
-            System.err.println("Unable to perform database operation:\n" + ex.getMessage());
-        } catch (ParseException ex) {
-            System.err.println("Unable to parse database files:\n" + ex.getErrorType() + " " + ex.getUnexpectedObject() + " at " + ex.getPosition());
+
+        } catch (Exception ex) {
+            System.err.println("Exception");
         }
     }
 }
