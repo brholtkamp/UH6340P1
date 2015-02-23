@@ -2,6 +2,7 @@ package com.UH6340;
 
 import com.UH6340.DB.DBHandler;
 import com.UH6340.SQL.SQLHandler;
+import com.UH6340.SQL.SQLParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -23,15 +24,23 @@ public class Main {
                         };
 
     public static void main(String[] args) {
-        SQLHandler handler = new SQLHandler();
-        for (String query : queries) {
-            handler.handleMessage(query);
-        }
+        // Test the SQL handler
 
+
+        // Setup our DB handler to make life easier
         try {
+            SQLHandler handler = new SQLHandler();
             DBHandler dbHandler = new DBHandler();
+
+            for (String query : queries) {
+                System.out.println(query);
+                handler.handleMessage(query);
+                if (handler.getCommandType() == SQLParser.RULE_tableCreation) {
+                    dbHandler.addTable(handler.getTables().get(0), handler.getFields());
+                }
+            }
         } catch (IOException ex) {
-            System.err.println("Unable to setup database handler:\n" + ex.getMessage());
+            System.err.println("Unable to perform database operation:\n" + ex.getMessage());
         } catch (ParseException ex) {
             System.err.println("Unable to parse database files:\n" + ex.getErrorType() + " " + ex.getUnexpectedObject() + " at " + ex.getPosition());
         }

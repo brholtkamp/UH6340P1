@@ -7,9 +7,11 @@ DB.txt:
     "tables": [
         {
             "name":"table1"
-            "field1":"type",
-            "field2":"type",
-            ...
+            "fields":[
+                "field1":"type",
+                "field2":"type",
+                ...
+            ]
         },
         {
             ...
