@@ -16,7 +16,6 @@ import java.util.ArrayList;
  * SELECT selections FROM tables { WHERE queries }
  */
 
-
 public class SQLCommandHandler {
     final static int maxStringSize = 64;
 
