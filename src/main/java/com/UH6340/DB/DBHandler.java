@@ -14,13 +14,13 @@ import java.util.ArrayList;
  * Used to provide an easy interface with the database, accepts SQL strings to handle actions
  */
 
-public class DBCommandHandler {
-    DataDictionaryHandler dictionary;
+public class DBHandler {
+    DataDictionary dictionary;
     SQLCommandHandler sql;
 
-    public DBCommandHandler() throws Exception {
+    public DBHandler() throws Exception {
         try {
-            dictionary = new DataDictionaryHandler();
+            dictionary = new DataDictionary();
             sql = new SQLCommandHandler();
         } catch (IOException ex) {
             throw new IOException(ex.getMessage());
@@ -52,61 +52,79 @@ public class DBCommandHandler {
 
     private void selectFromTable(ArrayList<String> tables, ArrayList<String> selections, ArrayList<Pair<String, String>> queries) {
         System.out.println("Select " + tables + " from " + selections.toString() + " where " + queries.toString());
-        // Resolve projection and grab indicies of tables
+
+        // Figure out what fields belong to what tables
+
+        // Get the relevant incidies for the tables
+
         // Grab relevant pieces from table
+
         // Print out data in terminal
     }
 
-    private void insertIntoTable(String tableName, ArrayList<String> values) throws Exception {
+    private void insertIntoTable(String tableName, ArrayList<String> values) throws IOException {
         // Check to see if the table exists
         if (dictionary.checkIfTableExists(tableName)) {
-            ArrayList<String> tableDataTypes = dictionary.getTableDatatypes(tableName);
+            DataDictionary.Table table = dictionary.getTable(tableName);
 
             // Check to see if this is a valid insertion
-            if (values.size() == dictionary.getTableDatatypes(tableName).size() && checkDatatypes(values, tableDataTypes)) {
-                // Craft the new tuple
-                StringBuilder buffer = new StringBuilder();
-                for (String value : values) {
-                    buffer.append(value);
-                    buffer.append(",");
-                }
-                buffer.append("\n");
-
-                // Append to the file
-                BufferedWriter table = new BufferedWriter(new FileWriter(dictionary.getTable(tableName), true));
-                table.append(buffer.toString());
-                table.close();
+            if (values.size() == table.fields.size() && checkDatatypes(values, table)) {
+                // Craft the new tuple && append to the file
+                addToTable(tableName, craftTuple(values));
             } else {
-                throw new Exception("Insertion operation on " + tableName + " failed due to schema mismatch" + "\nExpected schema: " + tableDataTypes.toString());
+                throw new IOException("Insertion operation on " + tableName + " failed due to schema mismatch" + "\nExpected schema: " + table.fieldOrder.toString().substring(1, table.fieldOrder.toString().length() - 1));
             }
         } else {
-            throw new Exception("Table " + tableName + " doesn't exist in the database");
+            throw new IOException("Table " + tableName + " doesn't exist in the database");
         }
     }
 
-    private boolean checkDatatypes(ArrayList<String> values, ArrayList<String> tableDataTypes) {
-        boolean typeMatch = true;
+    private void addToTable(String tableName, String tuple) throws IOException {
+        try {
+            BufferedWriter tableFile = new BufferedWriter(new FileWriter(dictionary.getTableFileHandle(tableName), true));
+            tableFile.append(tuple);
+            tableFile.close();
+        } catch (IOException ex) {
+            throw new IOException("Failed to write insertion to file");
+        }
+    }
 
+    private String craftTuple(ArrayList<String> values) {
+        StringBuilder buffer = new StringBuilder();
+        for (String value : values) {
+            buffer.append(value);
+            buffer.append(",");
+        }
+        buffer.append("\n");
+        return buffer.toString();
+    }
+
+    private boolean checkDatatypes(ArrayList<String> values, DataDictionary.Table table) {
         for (int i = 0; i < values.size(); i++) {
             // Check to see if it's an integer
-            if (values.get(i).matches("^\\d+") && !tableDataTypes.get(i).equals("INT")) {
-                typeMatch = false;
-            }
-
-            // Check to see if it's a string
-            if (!values.get(i).matches("^\\d+") && tableDataTypes.get(i).equals("INT")) {
-                typeMatch = false;
+            if (values.get(i).matches("^\\d+")) {
+                if (table.fields.get(table.fieldOrder.get(i)).equals("INT")) {
+                    // Valid INT
+                } else {
+                    return false;
+                }
+            } else {
+                if (table.fields.get(table.fieldOrder.get(i)).equals("STRING")) {
+                    // Valid STRING
+                } else {
+                    return false;
+                }
             }
         }
 
-        return typeMatch;
+        return true;
     }
 
     private void createTable(String tableName, ArrayList<Pair<String, String>> fields) throws IOException {
         try {
             dictionary.addTable(tableName, fields);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            throw ex;
         }
     }
 }
