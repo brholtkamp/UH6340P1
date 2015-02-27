@@ -11,15 +11,13 @@ public class Main {
             "CREATE head (boss INT, division STRING)",
             "INSERT INTO employee (1, \"Alicia\", \"Direction\")",
             "INSERT INTO salary (1, 100000)",
-            "INSERT INTO employee (2, \"Bob\", \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\")",
-            "INSERT INTO employee (2, 2, 2)",
-            "INSERT INTO employee (2, 2)",
+            "INSERT INTO employee (2, \"Bob\", \"Production\")",
             "INSERT INTO salary (2, 95000)",
             "INSERT INTO head (2, \"Production\")",
             "SELECT * FROM employee, salary WHERE id = id",
             "SELECT * FROM employee, head WHERE id = boss",
             "SELECT name, division FROM employee",
-            "SELECT * FROM table WHERE division = \"Direction\""
+            "SELECT * FROM head WHERE division = \"Production\""
     };
 
     public static void main(String[] args) {

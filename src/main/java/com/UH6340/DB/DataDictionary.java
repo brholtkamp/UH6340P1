@@ -176,21 +176,39 @@ public class DataDictionary {
     }
 
     public boolean checkIfTableExists(String tableName) {
-        boolean exists = false;
         for (String table : dictionary.keySet()) {
             if (table.equals(tableName)) {
-                exists = true;
+                return true;
             }
         }
 
-        return exists;
+        return false;
     }
 
-    public Table getTable(String tableName) throws FileNotFoundException {
+    public boolean checkifTableHasField(String tableName, String field) {
+        if (checkIfTableExists(tableName)) {
+            if (dictionary.get(tableName).fields.containsKey(field)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int getIndexOfField(String tableName, String field) {
+        if (checkifTableHasField(tableName, field)) {
+            return dictionary.get(tableName).fieldOrder.indexOf(field);
+        }
+
+        return -1;
+    }
+
+
+    public Table getTable(String tableName) throws Exception {
         if (checkIfTableExists(tableName)) {
             return dictionary.get(tableName);
         } else {
-            throw new FileNotFoundException("Table " + tableName + " does not exist");
+            throw new Exception("Table " + tableName + " does not exist");
         }
     }
 

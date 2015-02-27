@@ -4,10 +4,10 @@ import com.UH6340.SQL.SQLCommandHandler;
 import com.UH6340.SQL.SQLParser;
 import org.antlr.v4.runtime.misc.Pair;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  * Created by Brian Holtkamp on 2/23/2015.
@@ -50,19 +50,117 @@ public class DBHandler {
         }
     }
 
-    private void selectFromTable(ArrayList<String> tables, ArrayList<String> selections, ArrayList<Pair<String, String>> queries) {
-        System.out.println("Select " + tables + " from " + selections.toString() + " where " + queries.toString());
+    private void selectFromTable(ArrayList<String> tables, ArrayList<String> selections, ArrayList<Pair<String, String>> queries) throws Exception {
+        // Make sure all tables exist within the query
+        for (String table : tables) {
+            if (!dictionary.checkIfTableExists(table)) {
+                throw new IOException("Table " + table + " does not exist");
+            }
+        }
 
-        // Figure out what fields belong to what tables
+        LinkedList<LinkedList<String>> tuples = new LinkedList<LinkedList<String>>();
 
-        // Get the relevant incidies for the tables
+        // Projection operation
+        if (tables.size() == 1) {
+            File tableHandle = dictionary.getTableFileHandle(tables.get(0));
 
-        // Grab relevant pieces from table
+            // Find the indices that matter for this table and the projection
+            LinkedList<Integer> indices = new LinkedList<Integer>();
+            if (selections.get(0).equals("*")) {
+                for (int i = 0; i < dictionary.getTable(tables.get(0)).fields.size(); i++) {
+                    indices.add(i);
+                }
+            } else {
+                for (String selection : selections) {
+                    indices.add(dictionary.getIndexOfField(tables.get(0), selection));
+                }
+            }
+
+            LinkedList<Pair<Integer, String>> constraints = new LinkedList<Pair<Integer, String>>();
+            // Determine the queries on what indices
+            if (queries.size() > 0) {
+                for (Pair<String, String> query : queries) {
+                    constraints.add(new Pair<Integer, String>(dictionary.getIndexOfField(tables.get(0), query.a), query.b.replace("\"", "")));
+                }
+            }
+
+            BufferedReader reader = new BufferedReader(new FileReader(tableHandle));
+            String buffer;
+
+            // Iterate through the file
+            while ((buffer = reader.readLine()) != null && buffer.length() != 0) {
+                String[] values = buffer.split(",");
+
+                // Grab the correct values from the indices
+                LinkedList<String> tuple = new LinkedList<String>();
+                if (constraints.size() == 0) {
+                    for (Integer index : indices) {
+                        tuple.add(values[index]);
+                    }
+                } else {
+                    for (Pair<Integer, String> constraint : constraints) {
+                        if (values[constraint.a].equals(constraint.b)) {
+                            for (Integer index : indices) {
+                                tuple.add(values[index]);
+                            }
+                        }
+                    }
+                }
+
+                if (tuple.size() > 0) {
+                    tuples.add(tuple);
+                }
+            }
+            reader.close();
+        } else {
+            // Join operation
+            String table1 = tables.get(0);
+            String table2 = tables.get(1);
+            Integer table1JoinIndex = dictionary.getIndexOfField(table1, queries.get(0).a);
+            Integer table2JoinIndex = dictionary.getIndexOfField(table2, queries.get(0).b);
+
+            BufferedReader table1Reader = new BufferedReader(new FileReader(dictionary.getTableFileHandle(table1)));
+            String table1Buffer, table2Buffer;
+
+            while ((table1Buffer = table1Reader.readLine()) != null && table1Buffer.length() != 0) {
+                String[] table1Values = table1Buffer.split(",");
+
+                BufferedReader table2Reader = new BufferedReader(new FileReader(dictionary.getTableFileHandle(table2)));
+                while ((table2Buffer = table2Reader.readLine()) != null && table2Buffer.length() != 0) {
+                    String[] table2Values = table2Buffer.split(",");
+
+                    if (table1Values[table1JoinIndex].equals(table2Values[table2JoinIndex])) {
+                        LinkedList<String> tuple = new LinkedList<String>();
+
+                        tuple.addAll(Arrays.asList(table1Values));
+                        for (String value : table2Values) {
+                            if (!value.equals(table2Values[table2JoinIndex])) {
+                                tuple.add(value);
+                            }
+                        }
+
+                        if (tuple.size() > 0) {
+                            tuples.add(tuple);
+                        }
+                    }
+                }
+                table2Reader.close();
+            }
+            table1Reader.close();
+        }
 
         // Print out data in terminal
+        if (tuples.size() > 0) {
+            for (LinkedList<String> tuple : tuples) {
+                for (String value : tuple) {
+                    System.out.print(value + ",");
+                }
+                System.out.println();
+            }
+        }
     }
 
-    private void insertIntoTable(String tableName, ArrayList<String> values) throws IOException {
+    private void insertIntoTable(String tableName, ArrayList<String> values) throws Exception {
         // Check to see if the table exists
         if (dictionary.checkIfTableExists(tableName)) {
             DataDictionary.Table table = dictionary.getTable(tableName);
