@@ -58,7 +58,7 @@ public class DataDictionary {
                 BufferedReader reader = new BufferedReader(new FileReader(dictionaryFile));
 
                 // Consume the file line by line
-                for (String dictionaryLine; (dictionaryLine = reader.readLine()) != null;) {
+                for (String dictionaryLine; (dictionaryLine = reader.readLine()) != null; ) {
                     // Split on comma to get the entry details
                     String[] lineContents = dictionaryLine.split(",");
 
@@ -82,9 +82,13 @@ public class DataDictionary {
                     }
                 }
 
-                // Output our loaded dictionary
-                System.out.println("Loaded the following data dictionary entries");
-                printDictionary();
+                if (dictionary.size() > 0) {
+                    // Output our loaded dictionary
+                    System.out.println("Loaded the following data dictionary entries");
+                    printDictionary();
+                } else {
+                    System.out.println("Loaded an empty data dictionary");
+                }
             }
         } catch (IOException ex) {
             throw new IOException("Unable to write dictionary file");

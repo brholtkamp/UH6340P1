@@ -118,6 +118,17 @@ public class DBHandler {
             String table2 = tables.get(1);
             Integer table1JoinIndex = dictionary.getIndexOfField(table1, queries.get(0).a);
             Integer table2JoinIndex = dictionary.getIndexOfField(table2, queries.get(0).b);
+            ArrayList<Integer> table2Indices = new ArrayList<Integer>();
+
+            // Figure out which fields from table2 to use
+            DataDictionary.Table table1Info = dictionary.getTable(table1);
+            DataDictionary.Table table2Info = dictionary.getTable(table2);
+
+            for (String field : table2Info.fields.keySet()) {
+                if (!table1Info.fields.containsKey(field)) {
+                    table2Indices.add(dictionary.getIndexOfField(table2, field));
+                }
+            }
 
             BufferedReader table1Reader = new BufferedReader(new FileReader(dictionary.getTableFileHandle(table1)));
             String table1Buffer, table2Buffer;
@@ -133,9 +144,9 @@ public class DBHandler {
                         LinkedList<String> tuple = new LinkedList<String>();
 
                         tuple.addAll(Arrays.asList(table1Values));
-                        for (String value : table2Values) {
-                            if (!value.equals(table2Values[table2JoinIndex])) {
-                                tuple.add(value);
+                        for (int i = 0; i < table2Values.length; i++) {
+                            if (table2Indices.contains(i) && i != table2JoinIndex) {
+                                tuple.add(table2Values[i]);
                             }
                         }
 
@@ -152,10 +163,14 @@ public class DBHandler {
         // Print out data in terminal
         if (tuples.size() > 0) {
             for (LinkedList<String> tuple : tuples) {
-                for (String value : tuple) {
-                    System.out.print(value + ",");
+                StringBuilder buffer = new StringBuilder();
+                for (int i = 0; i < tuple.size(); i++) {
+                    buffer.append(tuple.get(i));
+                    if (i != tuple.size() - 1) {
+                        buffer.append(",");
+                    }
                 }
-                System.out.println();
+                System.out.println(buffer.toString());
             }
         }
     }
@@ -170,7 +185,18 @@ public class DBHandler {
                 // Craft the new tuple && append to the file
                 addToTable(tableName, craftTuple(values));
             } else {
-                throw new IOException("Insertion operation on " + tableName + " failed due to schema mismatch" + "\nExpected schema: " + table.fieldOrder.toString().substring(1, table.fieldOrder.toString().length() - 1));
+                StringBuilder schema = new StringBuilder();
+                schema.append("(");
+                for (int i = 0; i < table.fieldOrder.size(); i++) {
+                    schema.append(table.fieldOrder.get(i));
+                    schema.append(":");
+                    schema.append(table.fields.get(table.fieldOrder.get(i)));
+                    if (i != table.fieldOrder.size() - 1) {
+                        schema.append(", ");
+                    }
+                }
+                schema.append(")");
+                throw new IOException("Insertion operation on " + tableName + " failed due to schema mismatch" + "\nExpected schema:" + schema.toString());
             }
         } else {
             throw new IOException("Table " + tableName + " doesn't exist in the database");
@@ -200,29 +226,17 @@ public class DBHandler {
     private boolean checkDatatypes(ArrayList<String> values, DataDictionary.Table table) {
         for (int i = 0; i < values.size(); i++) {
             // Check to see if it's an integer
-            if (values.get(i).matches("^\\d+")) {
-                if (table.fields.get(table.fieldOrder.get(i)).equals("INT")) {
-                    // Valid INT
-                } else {
-                    return false;
-                }
-            } else {
-                if (table.fields.get(table.fieldOrder.get(i)).equals("STRING")) {
-                    // Valid STRING
-                } else {
-                    return false;
-                }
+            if (!values.get(i).matches("^\\d+") && table.fields.get(table.fieldOrder.get(i)).equals("INT")) {
+                // Invalid INT
+                return false;
             }
         }
 
+        // Else it's a STRING and thus can be any series of characters
         return true;
     }
 
     private void createTable(String tableName, ArrayList<Pair<String, String>> fields) throws IOException {
-        try {
-            dictionary.addTable(tableName, fields);
-        } catch (IOException ex) {
-            throw ex;
-        }
+        dictionary.addTable(tableName, fields);
     }
 }
