@@ -65,10 +65,12 @@ public class Main {
                     db.handleCommand(command);
                 } else if (command.equals("test")) {
                     for (String query : testQueries) {
+                        System.out.println(query);
                         db.handleCommand(query);
                     }
                 } else if (command.equals("test2")) {
                     for (String query : testQueries2) {
+                        System.out.println(query);
                         db.handleCommand(query);
                     }
                 } else {
