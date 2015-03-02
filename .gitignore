@@ -51,6 +51,7 @@ crashlytics-build.properties
 
 ### Java ###
 *.class
+target/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
