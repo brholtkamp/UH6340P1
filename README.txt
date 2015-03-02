@@ -12,7 +12,7 @@ and executed with:
     mvn exec:java
 
 Design:
-This application is built in Java with the help of the ANTLR library.  ANTLR is a language library that builds a lexer/parser based upon a given grammar.  This is utilized in order to parse the SQL commands in a standard and safe way.
+This application is built in Java with the help of the ANTLR library.  ANTLR is a language library that builds a lexer/parser based upon a given grammar.  This is utilized in order to parse the SQL commands in a standard and safe way.  The grammar definition is contained within the SQL/SQL.g file.
 
 The database functionality is done manually with ASCII text files and controlled interactions with the files.  Any edits to the dictionary are checked before commited to the file.  Any insertions into a table are checked before committed to the file.
 
