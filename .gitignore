@@ -51,7 +51,6 @@ crashlytics-build.properties
 
 ### Java ###
 *.class
-target/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -118,4 +117,12 @@ Temporary Items
 
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
 
