@@ -1,6 +1,6 @@
 COSC 6340 Project 1:
 Brian Holtkamp  0875483
-Kajol Agarwal   1358284
+Kajol 1358284
 
 Contributions to the Project:
 Commit logs are on http://www.github.com/brholtkamp/UH6340/commit/master/
