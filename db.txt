@@ -1,3 +1,0 @@
-states,sid,INT,states.txt,
-states,sname,STRING,states.txt,
-states,sabbr,STRING,states.txt,
