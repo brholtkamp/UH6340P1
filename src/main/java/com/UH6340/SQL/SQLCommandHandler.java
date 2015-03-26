@@ -66,11 +66,11 @@ public class SQLCommandHandler {
 
         @Override
         public void exitField(SQLParser.FieldContext context) {
-            if (context.getChild(0).toString().replaceAll("\"", "").length() > maxStringSize) {
-                throw new ParseCancellationException("Name exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\"", ""));
+            if (context.getChild(0).toString().replaceAll("\'", "").length() > maxStringSize) {
+                throw new ParseCancellationException("Name exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\'", ""));
             }
 
-            Pair<String, String> field = new Pair<String, String>(context.getChild(0).toString().replaceAll("\"", ""), context.getChild(1).toString().replaceAll("\"", ""));
+            Pair<String, String> field = new Pair<String, String>(context.getChild(0).toString().replaceAll("\'", ""), context.getChild(1).toString().replaceAll("\'", ""));
             fields.add(field);
         }
 
@@ -80,11 +80,11 @@ public class SQLCommandHandler {
 
         @Override
         public void exitValue(SQLParser.ValueContext context) {
-            if (context.getChild(0).toString().replaceAll("\"", "").length() > maxStringSize) {
-                throw new ParseCancellationException("String exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\"", ""));
+            if (context.getChild(0).toString().replaceAll("\'", "").length() > maxStringSize) {
+                throw new ParseCancellationException("String exceeds " + maxStringSize + " size: " + context.getChild(0).toString().replaceAll("\'", ""));
             }
 
-            values.add(context.getChild(0).toString().replaceAll("\"", ""));
+            values.add(context.getChild(0).toString().replaceAll("\'", ""));
         }
 
         ArrayList<String> getValues() {
@@ -102,7 +102,18 @@ public class SQLCommandHandler {
 
         @Override
         public void exitQuery(SQLParser.QueryContext context) {
-            Pair<String, String> query = new Pair<String, String>(context.variable(0).getChild(0).toString(), context.variable(1).getChild(0).toString());
+            String variable1 = context.variable(0).getChild(0).toString();
+            String variable2 = context.variable(1).getChild(0).toString();
+
+            if (context.variable(0).getChild(0).toString().contains("\'")) {
+                variable1 = context.variable(0).getChild(0).toString().replaceAll("\'", "");
+            }
+
+            if (context.variable(1).getChild(0).toString().contains("\'")) {
+                variable2 = context.variable(1).getChild(0).toString().replaceAll("\'", "");
+            }
+
+            Pair<String, String> query = new Pair<String, String>(variable1, variable2);
             queries.add(query);
         }
 
