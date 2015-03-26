@@ -1,5 +1,6 @@
 tables/
 db.txt
+*.sql
 
 # Created by https://www.gitignore.io
 
